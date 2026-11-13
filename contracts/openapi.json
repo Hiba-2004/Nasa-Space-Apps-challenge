@@ -1,0 +1,1176 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ASTRAVITAL API",
+    "description": "Offline-first astronaut health decision-support prototype. Synthetic examples only; not a medical device or diagnostic system.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Health",
+        "operationId": "health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts": {
+      "get": {
+        "tags": [
+          "astronauts"
+        ],
+        "summary": "List Astronauts",
+        "operationId": "list_astronauts_api_v1_astronauts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Astronaut"
+                  },
+                  "type": "array",
+                  "title": "Response List Astronauts Api V1 Astronauts Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "astronauts"
+        ],
+        "summary": "Create Astronaut",
+        "operationId": "create_astronaut_api_v1_astronauts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AstronautCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Astronaut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts/{astronaut_id}": {
+      "get": {
+        "tags": [
+          "astronauts"
+        ],
+        "summary": "Get Astronaut",
+        "operationId": "get_astronaut_api_v1_astronauts__astronaut_id__get",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Astronaut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts/{astronaut_id}/measurements": {
+      "get": {
+        "tags": [
+          "measurements"
+        ],
+        "summary": "List Measurements",
+        "operationId": "list_measurements_api_v1_astronauts__astronaut_id__measurements_get",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HealthMeasurement"
+                  },
+                  "title": "Response List Measurements Api V1 Astronauts  Astronaut Id  Measurements Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "measurements"
+        ],
+        "summary": "Create Measurement",
+        "operationId": "create_measurement_api_v1_astronauts__astronaut_id__measurements_post",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthMeasurementCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthMeasurement"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts/{astronaut_id}/checkins": {
+      "get": {
+        "tags": [
+          "check-ins"
+        ],
+        "summary": "List Checkins",
+        "operationId": "list_checkins_api_v1_astronauts__astronaut_id__checkins_get",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CheckIn"
+                  },
+                  "title": "Response List Checkins Api V1 Astronauts  Astronaut Id  Checkins Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "check-ins"
+        ],
+        "summary": "Create Checkin",
+        "operationId": "create_checkin_api_v1_astronauts__astronaut_id__checkins_post",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckInCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckIn"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts/{astronaut_id}/assessments": {
+      "post": {
+        "tags": [
+          "assessments"
+        ],
+        "summary": "Create Assessment",
+        "operationId": "create_assessment_api_v1_astronauts__astronaut_id__assessments_post",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthAssessment"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "assessments"
+        ],
+        "summary": "List Assessments",
+        "operationId": "list_assessments_api_v1_astronauts__astronaut_id__assessments_get",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HealthAssessment"
+                  },
+                  "title": "Response List Assessments Api V1 Astronauts  Astronaut Id  Assessments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts/{astronaut_id}/alerts": {
+      "get": {
+        "tags": [
+          "alerts"
+        ],
+        "summary": "List Alerts",
+        "description": "Reserved MVP endpoint; no clinical alert rules are defined.",
+        "operationId": "list_alerts_api_v1_astronauts__astronaut_id__alerts_get",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Alert"
+                  },
+                  "title": "Response List Alerts Api V1 Astronauts  Astronaut Id  Alerts Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/astronauts/{astronaut_id}/report": {
+      "get": {
+        "tags": [
+          "reports"
+        ],
+        "summary": "Get Report",
+        "operationId": "get_report_api_v1_astronauts__astronaut_id__report_get",
+        "parameters": [
+          {
+            "name": "astronaut_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Astronaut Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AstronautReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/mission-context": {
+      "get": {
+        "tags": [
+          "mission"
+        ],
+        "summary": "Mission Context",
+        "operationId": "mission_context_api_v1_mission_context_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissionContext"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Alert": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "astronaut_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Astronaut Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "astronaut_id",
+          "created_at",
+          "title",
+          "detail",
+          "status"
+        ],
+        "title": "Alert"
+      },
+      "Astronaut": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Display Name",
+            "examples": [
+              "Synthetic Crew A"
+            ]
+          },
+          "mission_role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mission Role"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name"
+        ],
+        "title": "Astronaut"
+      },
+      "AstronautCreate": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Display Name",
+            "examples": [
+              "Synthetic Crew A"
+            ]
+          },
+          "mission_role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mission Role"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name"
+        ],
+        "title": "AstronautCreate"
+      },
+      "AstronautReport": {
+        "properties": {
+          "astronaut": {
+            "$ref": "#/components/schemas/Astronaut"
+          },
+          "measurements": {
+            "items": {
+              "$ref": "#/components/schemas/HealthMeasurement"
+            },
+            "type": "array",
+            "title": "Measurements"
+          },
+          "checkins": {
+            "items": {
+              "$ref": "#/components/schemas/CheckIn"
+            },
+            "type": "array",
+            "title": "Checkins"
+          },
+          "assessments": {
+            "items": {
+              "$ref": "#/components/schemas/HealthAssessment"
+            },
+            "type": "array",
+            "title": "Assessments"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "data_notice": {
+            "type": "string",
+            "title": "Data Notice",
+            "default": "Missing values are omitted, never interpreted as normal."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "astronaut",
+          "measurements",
+          "checkins",
+          "assessments"
+        ],
+        "title": "AstronautReport"
+      },
+      "CheckIn": {
+        "properties": {
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood",
+            "description": "Self-reported 1\u20135 scale"
+          },
+          "fatigue": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fatigue",
+            "description": "Self-reported 1\u20135 scale"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "astronaut_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Astronaut Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "recorded_at",
+          "astronaut_id"
+        ],
+        "title": "CheckIn"
+      },
+      "CheckInCreate": {
+        "properties": {
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "mood": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mood",
+            "description": "Self-reported 1\u20135 scale"
+          },
+          "fatigue": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fatigue",
+            "description": "Self-reported 1\u20135 scale"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "recorded_at"
+        ],
+        "title": "CheckInCreate"
+      },
+      "Finding": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "data_status": {
+            "type": "string",
+            "title": "Data Status",
+            "description": "observed, insufficient_data, or unavailable"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "title",
+          "detail",
+          "data_status"
+        ],
+        "title": "Finding"
+      },
+      "GuidanceAction": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "evidence_links": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Links"
+          },
+          "urgency": {
+            "type": "string",
+            "title": "Urgency",
+            "default": "routine"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "rationale"
+        ],
+        "title": "GuidanceAction"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthAssessment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "astronaut_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Astronaut Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            },
+            "type": "array",
+            "title": "Findings"
+          },
+          "guidance_actions": {
+            "items": {
+              "$ref": "#/components/schemas/GuidanceAction"
+            },
+            "type": "array",
+            "title": "Guidance Actions"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer",
+            "default": "Decision support only; not a diagnosis or validated risk prediction."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "astronaut_id",
+          "findings",
+          "guidance_actions",
+          "summary"
+        ],
+        "title": "HealthAssessment"
+      },
+      "HealthMeasurement": {
+        "properties": {
+          "measured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Measured At",
+            "examples": [
+              "2026-10-01T08:00:00Z"
+            ]
+          },
+          "metric": {
+            "$ref": "#/components/schemas/MeasurementMetric"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "examples": [
+              62.0
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Unit",
+            "examples": [
+              "bpm"
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "astronaut_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Astronaut Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "measured_at",
+          "metric",
+          "value",
+          "unit",
+          "astronaut_id"
+        ],
+        "title": "HealthMeasurement"
+      },
+      "HealthMeasurementCreate": {
+        "properties": {
+          "measured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Measured At",
+            "examples": [
+              "2026-10-01T08:00:00Z"
+            ]
+          },
+          "metric": {
+            "$ref": "#/components/schemas/MeasurementMetric"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "examples": [
+              62.0
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Unit",
+            "examples": [
+              "bpm"
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "measured_at",
+          "metric",
+          "value",
+          "unit"
+        ],
+        "title": "HealthMeasurementCreate"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "ok"
+          },
+          "api_version": {
+            "type": "string",
+            "title": "Api Version",
+            "default": "v1"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "HealthResponse"
+      },
+      "MeasurementMetric": {
+        "type": "string",
+        "enum": [
+          "resting_heart_rate",
+          "sleep_hours",
+          "body_temperature",
+          "blood_pressure_systolic",
+          "blood_pressure_diastolic"
+        ],
+        "title": "MeasurementMetric"
+      },
+      "MissionContext": {
+        "properties": {
+          "mission_name": {
+            "type": "string",
+            "title": "Mission Name"
+          },
+          "mission_day": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Mission Day"
+          },
+          "communication_delay_minutes": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Communication Delay Minutes"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "default": "simulated"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "title": "Is Synthetic",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mission_name",
+          "mission_day",
+          "communication_delay_minutes"
+        ],
+        "title": "MissionContext"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

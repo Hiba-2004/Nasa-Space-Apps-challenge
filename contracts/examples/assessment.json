@@ -1,0 +1,22 @@
+{
+  "id": "44444444-4444-4444-8444-444444444444",
+  "astronaut_id": "11111111-1111-4111-8111-111111111111",
+  "created_at": "2026-10-01T18:05:00Z",
+  "findings": [{
+    "code": "history_summarized",
+    "title": "Measurement history available",
+    "detail": "Reviewed 1 measurement(s) across 1 metric(s).",
+    "evidence": ["metrics: resting_heart_rate"],
+    "data_status": "observed"
+  }],
+  "guidance_actions": [{
+    "id": "review-observations",
+    "title": "Review the recorded observations",
+    "rationale": "The assessment summarizes available data without applying clinical thresholds.",
+    "evidence_links": ["finding:history_summarized"],
+    "urgency": "routine"
+  }],
+  "summary": "A transparent descriptive review of available synthetic observations.",
+  "disclaimer": "Decision support only; not a diagnosis or validated risk prediction."
+}
+
