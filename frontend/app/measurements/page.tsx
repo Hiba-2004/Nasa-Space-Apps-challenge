@@ -2,6 +2,9 @@
 "use client";
 
 import { useState } from "react";
+import { createMeasurement } from "../../services/api";
+
+const ASTRONAUT_ID = "2ed59a65-3aee-59ca-bf36-2e51cde454a5";
 
 export default function MeasurementsPage() {
   const [form, setForm] = useState({
@@ -14,23 +17,31 @@ export default function MeasurementsPage() {
   });
 
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  function handleChange(
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setForm({
       ...form,
       [event.target.name]: event.target.value,
     });
     setMessage("");
+    setIsError(false);
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const draft = {
-      measured_at: new Date(form.measuredAt).toISOString(),
-      measurements: [
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setMessage("");
+    setIsError(false);
+
+    try {
+      const measuredAt = new Date(form.measuredAt).toISOString();
+
+      const measurements = [
         {
           metric: "resting_heart_rate",
           value: Number(form.heartRate),
@@ -56,15 +67,40 @@ export default function MeasurementsPage() {
           value: Number(form.diastolic),
           unit: "mmHg",
         },
-      ],
-      source: "synthetic manual entry",
-    };
+      ];
 
-    console.log("Measurement draft:", draft);
+      for (const measurement of measurements) {
+        await createMeasurement(ASTRONAUT_ID, {
+          measured_at: measuredAt,
+          ...measurement,
+          source: "synthetic manual entry",
+        });
+      }
 
-    setMessage(
-      "Measurement draft created successfully. API integration is not connected yet."
-    );
+      setMessage(
+        "Success! All 5 measurements have been saved to the backend."
+      );
+
+      setForm({
+        measuredAt: "",
+        heartRate: "",
+        sleepHours: "",
+        temperature: "",
+        systolic: "",
+        diastolic: "",
+      });
+    } catch (error) {
+      console.error("Measurement submission error:", error);
+
+      setIsError(true);
+      setMessage(
+        error instanceof Error
+          ? `Unable to save measurements: ${error.message}`
+          : "An unexpected error occurred."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   function Field({
@@ -111,7 +147,6 @@ export default function MeasurementsPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-4xl">
-
         <a
           href="/"
           className="text-sm text-cyan-400 hover:text-cyan-300"
@@ -142,6 +177,7 @@ export default function MeasurementsPage() {
             <h2 className="text-xl font-semibold">
               Measurement Details
             </h2>
+
             <p className="mt-2 text-sm text-slate-400">
               Enter the observation date and time.
             </p>
@@ -222,7 +258,11 @@ export default function MeasurementsPage() {
           {message && (
             <div
               role="status"
-              className="mb-5 rounded-xl border border-cyan-800 bg-cyan-950/40 p-4 text-sm text-cyan-200"
+              className={`mb-5 rounded-xl border p-4 text-sm ${
+                isError
+                  ? "border-red-800 bg-red-950/40 text-red-200"
+                  : "border-cyan-800 bg-cyan-950/40 text-cyan-200"
+              }`}
             >
               {message}
             </div>
@@ -231,13 +271,15 @@ export default function MeasurementsPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="submit"
-              className="rounded-xl bg-cyan-400 px-6 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300"
+              disabled={isSubmitting}
+              className="rounded-xl bg-cyan-400 px-6 py-3 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Review Measurements
+              {isSubmitting ? "Saving..." : "Save Measurements"}
             </button>
 
             <button
-              type="reset"
+              type="button"
+              disabled={isSubmitting}
               onClick={() => {
                 setForm({
                   measuredAt: "",
@@ -248,6 +290,7 @@ export default function MeasurementsPage() {
                   diastolic: "",
                 });
                 setMessage("");
+                setIsError(false);
               }}
               className="rounded-xl border border-slate-700 px-6 py-3 text-slate-300 transition hover:bg-slate-800"
             >
@@ -258,10 +301,10 @@ export default function MeasurementsPage() {
 
         <p className="mt-6 text-xs leading-6 text-slate-500">
           ASTRAVITAL is a health monitoring and decision-support prototype.
-          Entries are currently local drafts and are not saved to the backend.
-          This application does not diagnose medical conditions.
+          Entries are synthetic and are not intended for medical diagnosis.
         </p>
       </div>
     </main>
   );
 }
+

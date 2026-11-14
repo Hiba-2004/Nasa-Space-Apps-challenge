@@ -1,45 +1,107 @@
 
-import { MeasurementPreview } from "../components/MeasurementPreview";
+"use client";
 
-const metrics = [
-  {
-    label: "Resting Heart Rate",
-    value: "62",
-    unit: "bpm",
-    icon: "♡",
-    description: "Latest recorded measurement",
-  },
-  {
-    label: "Sleep Duration",
-    value: "7.2",
-    unit: "hours",
-    icon: "◷",
-    description: "Last sleep period",
-  },
-  {
-    label: "Body Temperature",
-    value: "36.7",
-    unit: "°C",
-    icon: "♧",
-    description: "Latest recorded measurement",
-  },
-  {
-    label: "Blood Pressure",
-    value: "118/76",
-    unit: "mmHg",
-    icon: "⌁",
-    description: "Systolic / Diastolic",
-  },
-];
+import { useEffect, useState } from "react";
+import { MeasurementPreview } from "../components/MeasurementPreview";
+import { getAstronautMeasurements } from "../services/api";
+
+const ASTRONAUT_ID = "2ed59a65-3aee-59ca-bf36-2e51cde454a5";
+
+type Measurement = {
+  id: string;
+  measured_at: string;
+  metric: string;
+  value: number;
+  unit: string;
+  source: string | null;
+  astronaut_id: string;
+};
 
 const navigation = [
   { label: "Overview", href: "#overview", icon: "◫" },
-  { label: "Measurements", href: "#measurements", icon: "♡" },
+  { label: "Measurements", href: "/measurements", icon: "♡" },
   { label: "Health Trends", href: "#trends", icon: "⌁" },
   { label: "Health Notes", href: "#health-notes", icon: "▤" },
 ];
 
 export default function Home() {
+  const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadMeasurements() {
+      try {
+        const data: Measurement[] =
+          await getAstronautMeasurements(ASTRONAUT_ID);
+
+        setMeasurements(data);
+      } catch (err) {
+        console.error("Error loading measurements:", err);
+        setError("Unable to load measurements from the backend.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadMeasurements();
+  }, []);
+
+  // Find the most recent measurement for a given metric
+  function getLatestValue(metricName: string): number | null {
+    const matchingMeasurements = measurements
+      .filter((item) => item.metric === metricName)
+      .sort(
+        (a, b) =>
+          new Date(b.measured_at).getTime() -
+          new Date(a.measured_at).getTime()
+      );
+
+    return matchingMeasurements.length > 0
+      ? matchingMeasurements[0].value
+      : null;
+  }
+
+  const heartRate = getLatestValue("resting_heart_rate");
+  const sleep = getLatestValue("sleep_hours");
+  const temperature = getLatestValue("body_temperature");
+  const systolic = getLatestValue("blood_pressure_systolic");
+  const diastolic = getLatestValue("blood_pressure_diastolic");
+
+  const metrics = [
+    {
+      label: "Resting Heart Rate",
+      value: heartRate !== null ? String(heartRate) : "--",
+      unit: "bpm",
+      icon: "♡",
+      description: "Latest recorded measurement",
+    },
+    {
+      label: "Sleep Duration",
+      value: sleep !== null ? String(sleep) : "--",
+      unit: "hours",
+      icon: "◷",
+      description: "Last sleep period",
+    },
+    {
+      label: "Body Temperature",
+      value: temperature !== null ? String(temperature) : "--",
+      unit: "°C",
+      icon: "♧",
+      description: "Latest recorded measurement",
+    },
+    {
+      label: "Blood Pressure",
+      value:
+        systolic !== null && diastolic !== null
+          ? `${systolic}/${diastolic}`
+          : "--/--",
+      unit: "mmHg",
+      icon: "⌁",
+      description: "Systolic / Diastolic",
+    },
+  ];
+
   return (
     <main
       id="overview"
@@ -155,6 +217,18 @@ export default function Home() {
             </p>
           </div>
 
+          {loading && (
+            <p className="mb-4 text-sm text-cyan-300">
+              Loading measurements...
+            </p>
+          )}
+
+          {error && (
+            <p className="mb-4 rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
+              {error}
+            </p>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {metrics.map((metric) => (
               <article
@@ -196,11 +270,11 @@ export default function Home() {
             <div className="mb-5">
               <h3 className="text-xl font-bold">Heart Rate Trends</h3>
               <p className="mt-1 text-sm text-slate-400">
-                Resting heart rate · Synthetic preview
+                Resting heart rate · Backend measurements
               </p>
             </div>
 
-            <MeasurementPreview />
+            <MeasurementPreview measurements={measurements} />
           </article>
 
           <article
