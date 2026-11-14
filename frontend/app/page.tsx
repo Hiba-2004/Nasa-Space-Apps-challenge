@@ -3,7 +3,12 @@
 
 import { useEffect, useState } from "react";
 import { MeasurementPreview } from "../components/MeasurementPreview";
-import { getAstronautMeasurements } from "../services/api";
+import {
+  getAstronautMeasurements,
+  getAstronautAssessments,
+  createAstronautAssessment,
+  getAstronautCheckins,
+} from "../services/api";
 
 const ASTRONAUT_ID = "2ed59a65-3aee-59ca-bf36-2e51cde454a5";
 
@@ -17,24 +22,67 @@ type Measurement = {
   astronaut_id: string;
 };
 
+type Finding = {
+  code: string;
+  title: string;
+  detail: string;
+  evidence: string[];
+  data_status: string;
+};
+
+type GuidanceAction = {
+  id: string;
+  title: string;
+  rationale: string;
+  evidence_links: string[];
+  urgency: string;
+};
+
+type Checkin = {
+  id: string;
+  astronaut_id: string;
+  recorded_at: string;
+  mood: string | number | null;
+  fatigue: string | number | null;
+  notes: string | null;
+};
+
+type Assessment = {
+  id: string;
+  astronaut_id: string;
+  created_at: string;
+  findings: Finding[];
+  guidance_actions: GuidanceAction[];
+  summary: string;
+  disclaimer?: string;
+};
+
 const navigation = [
   { label: "Overview", href: "#overview", icon: "◫" },
   { label: "Measurements", href: "/measurements", icon: "♡" },
   { label: "Health Trends", href: "#trends", icon: "⌁" },
   { label: "Health Notes", href: "#health-notes", icon: "▤" },
+  { label: "Health Assessment", href: "#assessment", icon: "✦" },
 ];
 
 export default function Home() {
   const [measurements, setMeasurements] = useState<Measurement[]>([]);
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [loading, setLoading] = useState(true);
+  const [assessmentLoading, setAssessmentLoading] = useState(true);
   const [error, setError] = useState("");
+  const [assessmentError, setAssessmentError] = useState("");
+  const [checkinLoading, setCheckinLoading] = useState(true);
+  const [checkinError, setCheckinError] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [generationMessage, setGenerationMessage] = useState("");
 
   useEffect(() => {
-    async function loadMeasurements() {
+    async function loadDashboard() {
       try {
         const data: Measurement[] =
           await getAstronautMeasurements(ASTRONAUT_ID);
-
         setMeasurements(data);
       } catch (err) {
         console.error("Error loading measurements:", err);
@@ -42,12 +90,32 @@ export default function Home() {
       } finally {
         setLoading(false);
       }
+
+      try {
+        const data: Assessment[] =
+          await getAstronautAssessments(ASTRONAUT_ID);
+        setAssessments(data);
+      } catch (err) {
+        console.error("Error loading assessments:", err);
+        setAssessmentError("Unable to load health assessments.");
+      } finally {
+        setAssessmentLoading(false);
+      }
+
+      try {
+        const data: Checkin[] = await getAstronautCheckins(ASTRONAUT_ID);
+        setCheckins(data);
+      } catch (err) {
+        console.error("Error loading check-ins:", err);
+        setCheckinError("Unable to load health notes from the backend.");
+      } finally {
+        setCheckinLoading(false);
+      }
     }
 
-    loadMeasurements();
+    loadDashboard();
   }, []);
 
-  // Find the most recent measurement for a given metric
   function getLatestValue(metricName: string): number | null {
     const matchingMeasurements = measurements
       .filter((item) => item.metric === metricName)
@@ -102,6 +170,49 @@ export default function Home() {
     },
   ];
 
+  const latestAssessment = assessments.length > 0
+    ? [...assessments].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() -
+          new Date(a.created_at).getTime()
+      )[0]
+    : null;
+
+  const latestCheckin = checkins.length > 0
+    ? [...checkins].sort(
+        (a, b) =>
+          new Date(b.recorded_at).getTime() -
+          new Date(a.recorded_at).getTime()
+      )[0]
+    : null;
+
+  const missingCheckinFields = latestCheckin
+    ? [latestCheckin.mood, latestCheckin.fatigue, latestCheckin.notes].filter(
+        (value) => value === null || value === undefined || value === ""
+      ).length
+    : null;
+
+  async function handleGenerateAssessment() {
+    try {
+      setGenerating(true);
+      setGenerationMessage("");
+      setAssessmentError("");
+
+      const newAssessment: Assessment =
+        await createAstronautAssessment(ASTRONAUT_ID);
+
+      setAssessments((current) => [newAssessment, ...current]);
+      setGenerationMessage("New health assessment generated successfully.");
+    } catch (err) {
+      console.error("Error generating assessment:", err);
+      setGenerationMessage(
+        "Unable to generate a new assessment. Please try again."
+      );
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   return (
     <main
       id="overview"
@@ -147,9 +258,7 @@ export default function Home() {
           <p className="mt-2 text-sm font-semibold text-white">
             Local simulation
           </p>
-          <p className="mt-1 text-xs text-slate-400">
-            Mission Day 42
-          </p>
+          <p className="mt-1 text-xs text-slate-400">Mission Day 42</p>
         </div>
 
         <div className="mt-8 hidden border-t border-slate-800 pt-5 lg:block">
@@ -288,21 +397,223 @@ export default function Home() {
               </h3>
             </div>
 
-            <p className="mt-5 text-sm leading-7 text-amber-50/80">
-              Fatigue was not reported in the latest synthetic check-in.
-              This information remains missing and is not interpreted as
-              a normal result.
-            </p>
+            {checkinLoading && (
+              <p className="mt-5 text-sm text-amber-100/70">
+                Loading health check-ins...
+              </p>
+            )}
+
+            {checkinError && (
+              <p className="mt-5 rounded-xl border border-red-800 bg-red-950/40 p-3 text-sm text-red-200">
+                {checkinError}
+              </p>
+            )}
+
+            {!checkinLoading && !checkinError && !latestCheckin && (
+              <p className="mt-5 text-sm leading-7 text-amber-50/80">
+                No health check-in has been recorded yet.
+              </p>
+            )}
+
+            {!checkinLoading && !checkinError && latestCheckin && (
+              <div className="mt-5 space-y-3 text-sm text-amber-50/80">
+                <p className="text-xs text-amber-200/60">
+                  Latest check-in: {new Date(latestCheckin.recorded_at).toLocaleString()}
+                </p>
+                <p>
+                  <span className="font-semibold text-amber-100">Mood: </span>
+                  {latestCheckin.mood ?? "Not reported"}
+                </p>
+                <p>
+                  <span className="font-semibold text-amber-100">Fatigue: </span>
+                  {latestCheckin.fatigue ?? "Not reported"}
+                </p>
+                <div>
+                  <p className="font-semibold text-amber-100">Notes:</p>
+                  <p className="mt-1 whitespace-pre-wrap">
+                    {latestCheckin.notes || "No notes provided."}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="mt-5 border-t border-amber-900/50 pt-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-300">
                 Data completeness
               </p>
               <p className="mt-2 text-sm text-amber-100/70">
-                One self-report field is missing.
+                {checkinLoading
+                  ? "Checking available self-report fields..."
+                  : checkinError
+                    ? "Completeness information is unavailable."
+                    : !latestCheckin
+                      ? "No self-report data is available."
+                      : missingCheckinFields === 0
+                        ? "All displayed self-report fields are provided."
+                        : `${missingCheckinFields} of 3 self-report fields are missing.`}
               </p>
             </div>
           </article>
+        </section>
+
+        {/* HEALTH ASSESSMENT */}
+        <section
+          id="assessment"
+          className="mt-9 rounded-2xl border border-cyan-900/50 bg-slate-900 p-5 sm:p-6"
+        >
+          <div className="mb-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-400">
+              Analytics & Health Assistant
+            </p>
+            <h3 className="mt-2 text-2xl font-bold">
+              Health Assessment
+            </h3>
+            <p className="mt-2 text-sm text-slate-400">
+              Descriptive findings and guidance generated by the backend.
+            </p>
+          </div>
+
+          <div className="mb-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleGenerateAssessment}
+              disabled={generating}
+              className="rounded-xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {generating ? "Generating..." : "Generate New Assessment"}
+            </button>
+
+            {generationMessage && (
+              <p
+                role="status"
+                className={`text-sm ${
+                  generationMessage.startsWith("Unable")
+                    ? "text-red-300"
+                    : "text-emerald-300"
+                }`}
+              >
+                {generationMessage}
+              </p>
+            )}
+          </div>
+
+          {assessmentLoading && (
+            <p className="text-sm text-cyan-300">
+              Loading health assessment...
+            </p>
+          )}
+
+          {assessmentError && (
+            <p className="rounded-xl border border-red-800 bg-red-950/40 p-4 text-sm text-red-200">
+              {assessmentError}
+            </p>
+          )}
+
+          {!assessmentLoading && !assessmentError && !latestAssessment && (
+            <p className="rounded-xl border border-slate-700 bg-slate-950 p-4 text-sm text-slate-400">
+              No assessment is available yet. Generate an assessment through
+              the backend first.
+            </p>
+          )}
+
+          {latestAssessment && (
+            <div className="space-y-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Latest assessment
+                </p>
+                <p className="mt-2 text-sm text-slate-300">
+                  {new Date(latestAssessment.created_at).toLocaleString()}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-slate-300">
+                  {latestAssessment.summary}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="mb-3 font-semibold text-cyan-300">
+                  Analytics Findings
+                </h4>
+
+                <div className="space-y-3">
+                  {latestAssessment.findings.map((finding) => (
+                    <article
+                      key={finding.code}
+                      className="rounded-xl border border-slate-700 bg-slate-950 p-4"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h5 className="font-semibold text-white">
+                          {finding.title}
+                        </h5>
+                        <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs text-cyan-300">
+                          {finding.data_status}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-slate-400">
+                        {finding.detail}
+                      </p>
+
+                      {finding.evidence.length > 0 && (
+                        <ul className="mt-3 space-y-1">
+                          {finding.evidence.map((item, index) => (
+                            <li
+                              key={index}
+                              className="text-xs text-slate-500"
+                            >
+                              • {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="mb-3 font-semibold text-emerald-300">
+                  Health Assistant Guidance
+                </h4>
+
+                <div className="space-y-3">
+                  {latestAssessment.guidance_actions.map((action) => (
+                    <article
+                      key={action.id}
+                      className="rounded-xl border border-emerald-900/50 bg-emerald-950/20 p-4"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h5 className="font-semibold text-emerald-100">
+                          {action.title}
+                        </h5>
+                        <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs text-emerald-300">
+                          {action.urgency}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-emerald-50/70">
+                        {action.rationale}
+                      </p>
+
+                      {action.evidence_links.length > 0 && (
+                        <p className="mt-3 text-xs text-emerald-200/50">
+                          Evidence: {action.evidence_links.join(", ")}
+                        </p>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              {latestAssessment.disclaimer && (
+                <div className="rounded-xl border border-amber-900/50 bg-amber-950/20 p-4">
+                  <p className="text-xs leading-6 text-amber-200/80">
+                    {latestAssessment.disclaimer}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* DISCLAIMER */}
