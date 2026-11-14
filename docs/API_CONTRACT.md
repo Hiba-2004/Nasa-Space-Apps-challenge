@@ -16,6 +16,8 @@ Base path: `/api/v1`. JSON is used for requests and responses. The generated `co
 
 POST collection endpoints return `201`. Collection GET endpoints return arrays, including an empty array when no record exists. A missing value is encoded as `null` only where the schema permits it or omitted because no observation exists; it is never replaced by zero or a normal label.
 
+Collection GET endpoints accept `offset` (default `0`) and `limit` (default `100`, maximum `500`). Measurement history additionally accepts an exact `metric` plus inclusive `from_time` and `to_time` UTC filters. Check-in history accepts the same time bounds. Alerts accept a `status` filter. Results are ordered oldest-first with UUID tie-breaking. Duplicate measurement identity (`astronaut`, `metric`, `measured_at`) and duplicate check-in identity (`astronaut`, `recorded_at`) return `409`.
+
 ## MVP measurements
 
 | Metric | Required unit | Meaning |

@@ -32,6 +32,7 @@ Set-Location ..
 Start both development processes from the repository root:
 
 ```powershell
+python -m alembic upgrade head
 .\scripts\dev.ps1
 ```
 
@@ -48,6 +49,8 @@ npm.cmd --prefix frontend run build
 ```
 
 The generated OpenAPI document is canonical. With the Python environment active, refresh the checked-in snapshot using `python scripts/export_openapi.py`.
+
+Load the bundled fictional scenario with `python -m backend.scripts.seed_synthetic`. The command uses deterministic identifiers and can be repeated without duplicating records. See `backend/README.md` for database migration and security notes.
 
 ## Parallel development workflow
 
