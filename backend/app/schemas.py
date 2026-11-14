@@ -44,7 +44,7 @@ class Astronaut(AstronautCreate):
 class HealthMeasurementCreate(ApiModel):
     measured_at: datetime = Field(examples=["2026-10-01T08:00:00Z"])
     metric: MeasurementMetric
-    value: float = Field(examples=[62.0])
+    value: float = Field(allow_inf_nan=False, examples=[62.0])
     unit: str = Field(min_length=1, max_length=20, examples=["bpm"])
     source: Annotated[str | None, Field(max_length=100)] = None
 
